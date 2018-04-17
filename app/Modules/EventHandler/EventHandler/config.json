@@ -1,0 +1,28 @@
+{
+    "sockets": {
+        "socket_port": 8080,
+        "websocket_port": 8089,
+        "whitelist": ""
+    },
+    "mysql": {
+        "host": "127.0.0.1",
+        "port": "3306",
+        "user": "CHANGE_ME",
+        "password": "CHANGE_ME"
+    },
+    "asterisk": {
+        "host": "127.0.0.1",
+        "port": "5038",
+        "user": "CHANGE_ME",
+        "password": "CHANGE_ME",
+        "format": "json"
+    },
+    "events": {
+        "Newstate": "on",
+        "Hangup": "on",
+        "ExtensionStatus": "on",
+        "OriginateResponse": "on"
+    },
+
+    "logpath": ""
+}
