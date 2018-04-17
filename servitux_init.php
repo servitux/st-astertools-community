@@ -29,12 +29,12 @@ $ret = exec("chmod -R 777 storage/ bootstrap/cache");
 //git
 if (!file_exists(".git"))
 {
-  if (ask("Do you want to download ST-Astertools from Git? (Y/n)", "Y") == "Y")
+  if (strtoupper(ask("Do you want to download ST-Astertools from Git? (Y/n)", "Y")) == "Y")
   {
     info('Downloading git project');
 
     $ret = exec("git init .");
-    $ret = exec("git remote add -t \* -f origin https://github.com/servitux/st-astertools-community.git"); 
+    $ret = exec("git remote add -t \* -f origin https://github.com/servitux/st-astertools-community.git");
     $ret = exec("git fetch origin master");
     $ret = exec("git reset --hard FETCH_HEAD");
 
