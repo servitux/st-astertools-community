@@ -135,7 +135,7 @@ if ($response == "Y")
   //}
   exec("wget https://github.com/almasaeed2010/AdminLTE/archive/v2.3.7.tar.gz -O public/assets/v2.3.7.tar.gz");
   exec("cd public/assets/ && tar xzf v2.3.7.tar.gz");
-  exec("rm public/assets/v2.3.7.tar.gz");
+  exec("rm v2.3.7.tar.gz");
 }
 
 //Sockets.io-client

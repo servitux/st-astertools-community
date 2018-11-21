@@ -41,8 +41,8 @@ class Group extends Model
         $where = "(";
         foreach ($extensions as $extension)
         {
-          $where .= "(src = '" . $extension->extension;
-          if ($extension->lastOper) $where .= "' AND calldate >= '" . $extension->lastOper . "'";
+          $where .= "(src = '" . $extension->extension . "'";
+          if ($extension->lastOper) $where .= " AND calldate >= '" . $extension->lastOper . "'";
           $where .= ") OR ";
         }
 

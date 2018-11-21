@@ -136,7 +136,7 @@ abstract class BaseController extends Controller
           switch ($rule) {
             case 'unique':
             if ($validator['aux'] != "") {
-              $rule = Rule::unique($validator['value'])->ignore($model->$validator['aux']);
+              $rule = Rule::unique($validator['value'])->ignore($validator['aux']);
             } else {
               if ($validator['value']) $rule .= ":" . $validator['value'];
             }
