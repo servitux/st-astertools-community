@@ -34,7 +34,7 @@ if (!file_exists(".git"))
     info('Downloading git project');
 
     $ret = exec("git init .");
-    $ret = exec("git remote add -t \* -f origin http://git.servitux.com/servitux/st-astertools-community.git");
+    $ret = exec("git remote add -t \* -f origin https://github.com/servitux/st-astertools-community.git");
     $ret = exec("git fetch origin master");
     $ret = exec("git reset --hard FETCH_HEAD");
 
