@@ -29,6 +29,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Crypt;
 
+use App\Models\Extension;
 use App\Models\UserConfig;
 
 class User extends Authenticatable
@@ -81,5 +82,15 @@ class User extends Authenticatable
           return "Usuario";
           break;
       }
+    }
+
+    public function getExtension()
+    {
+      return Extension::where('extension', $this->asterisk_extension)->first();
+    }
+
+    public function isAdmin()
+    {
+      return $this->profile == "A";
     }
 }
