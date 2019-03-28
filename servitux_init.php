@@ -175,6 +175,8 @@ if ($response == "Y")
   exec("rm public/js/socket-io.tar.gz");
 }
 
+info('ST-AsterTools initialization finished');
+
 function info($text)
 {
   echo "\033[00;32m " . $text . " \033[0m\n";
