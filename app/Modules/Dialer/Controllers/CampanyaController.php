@@ -113,34 +113,85 @@ class CampanyaController extends BaseController
 
   public function getCallsDataTable($id)
   {
-    $extensions = Extension::where('id_campaign', $id)->get();
-    $extens = [];
-    foreach ($extensions as $extension)
-      $extens[] = $extension->extension;
-
-    $entities = Call::whereIn('extension', $extens)->get();
+    $entities = Call::where('id_campaign', $id)->get();
     foreach ($entities as $entity)
     {
-      $entity->extension_string = "<strong>" . $entity->extension . "</strong>";
-      $entity->phone_string = "<strong>" . $entity->phone . "</strong>";
-      $entity->name_string = "<strong>" . $entity->name . "</strong>";
+      $entity->extension_string = "";
+      if ($entity->extension)
+        $entity->extension_string = "<strong>" . $entity->extension . "</strong>";
+      $entity->phone_string = Servitux::Telephone($entity->phone);
       $entity->result_string = $entity->getHTMLResult();
     }
     $data = array('data' => $entities);
     return $data;
   }
 
+  public function postImport(Request $request, $id)
+  {
+    $campaign = Campaign::find($id);
+    if (!$campaign)
+      abort(404, "Campaña no Encontrada");
+
+    //validar fichero
+    $validations = array('validations' => ['csv' => 'required|mimes:csv,txt'], 'messages' => [], 'niceNames' => []);
+
+    //validar y guardar
+    $validator = null;
+    $inputs = Servitux::validate($request, $validations, $validator);
+    if (!$inputs)
+      return back()->withErrors($validator)->with('group', 0);
+
+    $file = $request->file('csv');
+
+    //vaciar
+    Call::where('id_campaign', $id)->delete();
+
+    try {
+      $filename = $file->getPathName();
+      if(!file_exists($filename) || !is_readable($filename))
+        return back()->with('alert-danger', 'El fichero no existe o no es legible')->with('group', 0);
+
+      $data = array();
+      if (($handle = fopen($filename, 'r')) !== FALSE)
+      {
+        while (($row = fgetcsv($handle, 1000, ";")) !== FALSE)
+        {
+          if (count($row) > 1)
+          {
+            $call = new Call();
+            $call->extension = "";
+            $call->phone = $row[0];
+            $call->name = $row[1];
+            $call->city = $row[2];
+            $call->aux1 = $row[3];
+            $call->aux2 = $row[4];
+            $call->comments = $row[5];
+            $call->result = $row[6];
+            $call->id_campaign = $id;
+            $call->retries = 0;
+            $call->save();
+          }
+        }
+        fclose($handle);
+      }
+    } catch (Exception $ex) {
+      return back()->with('alert-danger', $ex->getMessage())->with('group', 0);
+    }
+
+    $counter = Call::where('id_campaign', $id)->count();
+    return back()->with('alert-success', "Importados $counter registros")->with('group', 0);
+  }
+
   public function getExport(Request $request, $id)
   {
-    $extensions = Extension::where('id_campaign', $id)->get();
-    $extens = [];
-    foreach ($extensions as $extension)
-      $extens[] = $extension->extension;
+    $campaign = Campaign::find($id);
+    if (!$campaign)
+      abort(404, "Campaña no Encontrada");
 
-    $table = Call::select(array('phone', 'name', 'city', 'aux1', 'aux2', 'comments', 'result'))->whereIn('extension', $extens)->get();
+    $entities = Call::select(array('phone', 'name', 'city', 'aux1', 'aux2', 'comments', 'result'))->where('id_campaign', $id)->get();
     $output='';
-    foreach ($table as $row)
-      $output.=  implode(";", $row->toArray()) . "\n";
+    foreach ($entities as $entity)
+      $output.=  implode(";", $entity->toArray()) . "\n";
 
     $headers = array(
       'Content-Type' => 'text/csv',

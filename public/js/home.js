@@ -81,14 +81,3 @@ $('body').on('click', '.asterisk_call', function(e) {
     }
   })
 });
-
-$('body').on('click', '.email', function(e) {
-  var email = $(this).attr("href");
-  var subject = encodeURIComponent("Presupuesto 2016/2783989");
-
-  var url = "https://mail.servitux.com/?_action=compose&_custom_app=true&_to=" + email + "&_attach=server.pdf&_subject=" + subject + "&_attach_display_name=invoice.pdf&_attach_mimetype=application/pdf";
-
-  window.open(url, 'Email', 'width=1024, height=768');
-
-  return false;
-});

@@ -2,7 +2,7 @@
 
 /**
  * @package     ST-AsterTools
- * @subpackage  app/Modules/PhoneBook/Migrations
+ * @subpackage  app/Modules/LostCalls/routes
  * @author      Servitux Servicios Informáticos, S.L.
  * @copyright   (C) 2017 - Servitux Servicios Informáticos, S.L.
  * @license     http://www.gnu.org/licenses/gpl-3.0-standalone.html
@@ -23,37 +23,14 @@
  * ST-AsterTools. If not, see http://www.gnu.org/licenses/.
  */
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
-
-class AddPhonebookPhonesTable extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
-    {
-        Schema::create('phonebook_phones', function (Blueprint $table) {
-            $table->increments('id');
-            $table->char('first_name', 255);
-            $table->char('last_name', 255)->default(NULL);
-            $table->char('phone1', 50);
-            $table->char('phone2', 50)->default(NULL);
-            $table->char('phone3', 50)->default(NULL);
-            $table->timestamps();
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('phonebook_phones');
-    }
-}
+Route::group(['middleware' => ['web', 'auth']], function() {
+  Route::get('/lostcalls/llamadas', 'App\Modules\LostCalls\Controllers\LostCallController@getAllEntities');
+  Route::get('/lostcalls/llamadas/datatable', 'App\Modules\LostCalls\Controllers\LostCallController@getEntitiesDataTable');
+  Route::post('/lostcalls/llamada/delete', 'App\Modules\LostCalls\Controllers\LostCallController@delete');
+  Route::post('/lostcalls/llamada/call', 'App\Modules\LostCalls\Controllers\LostCallController@call');
+  Route::post('/lostcalls/llamada/state', 'App\Modules\LostCalls\Controllers\LostCallController@state');
+  Route::post('/lostcalls/llamadas/clean', 'App\Modules\LostCalls\Controllers\LostCallController@clean');
+  Route::get('/lostcalls/ayuda', function() {
+    return view('LostCalls::ayuda');
+  });
+});

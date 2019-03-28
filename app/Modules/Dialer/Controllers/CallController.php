@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
+use Session;
 use DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF;
@@ -101,26 +102,24 @@ class CallController extends BaseController
 
   public function getEntitiesDataTable()
   {
-    $entities = $this->base_model->where('extension', Auth::user()->asterisk_extension)->get();
+    $is_admin = Auth::user()->isAdmin();
+    $extension = Auth::user()->getExtension();
+    if (!$extension)
+      return array('data' => []);
+
+    $entities = Call::where('id_campaign', $extension->id_campaign)->get();
     foreach ($entities as $entity)
     {
-      $url = url($this->url . "/" . $entity->id);
-      $buttons = array();
-
-      switch ($entity->result) {
-        case $this->DIALER_PENDING_STATE:
-          $buttons[] = array('class' => 'btn btn-primary btn-active', 'url' => $url . "/active", 'icon' => 'asterisk', 'title' => '', 'tooltip' => 'Activar');
-          break;
-
-        default:
-          $buttons[] = array('class' => 'btn btn-default btn-reset', 'url' => $url . "/reset", 'icon' => 'eraser', 'title' => '', 'tooltip' => 'Resetear Resultado');
-          break;
-      }
+      $buttons = [];
+      if ($entity->extension != "" && ($is_admin || $extension->extension == $entity->extension))
+        $buttons[] = array('class' => 'btn-danger btn-xs', 'url' => $entity->getResetUrl(), 'icon' => 'times', 'title' => 'Resetear');
 
       $entity->id_string = $entity->id;
       if ($entity->active) $entity->id_string .= " <i class='fa fa-asterisk text-red'></i>";
-      $entity->phone_string = "<strong>" . $entity->phone . "</strong>";
-      $entity->name_string = "<strong>" . $entity->name . "</strong>";
+      $entity->phone_string = Servitux::Telephone($entity->phone);
+      $entity->updated_at_string = "";
+      if ($entity->result == 4)
+        $entity->updated_at_string = Carbon::parse($entity->updated_at)->format("d/m/Y H:i:s");
       $entity->result_string = $entity->getHTMLResult();
 
       $entity->options = AdminLTE::Button_Group($buttons);
@@ -139,42 +138,48 @@ class CallController extends BaseController
     $params['isRunning'] = $isRunning;
     $params['callState'] = 0;
     $params['extension'] = $extension;
+
     return view($this->datatable_view, $params);
   }
 
-  public function putEntity(Request $request, $id)
+  public function afterSave($inputs, $model)
   {
-    parent::putEntity($request, $id);
-
-    $call = $this->next($id);
-    return $this->getPlay($call);
+    return $this->getPlay($model, "Registro guardado con éxito.");
   }
 
-
-  public function getPlay($call = null)
+  public function getPlay($last_call = null, $message = "")
   {
-    $extension = Extension::where('extension', Auth::user()->asterisk_extension)->first();
-    if (!$call)
-    {
-      $call = Call::where('active', true)->first();
-      if ($call)
-      {
-        $config = Config::find(1);
-        if ($config)
-        {
-          if ($config->first_record)
-            $call = $this->next($call->id, ">=");
-        }
-      }
-    }
+    $extension = Auth::user()->getExtension();
+    if (!$extension)
+      return back()->with('alert-danger', 'El usuario actual no dispone de extensión asignada');
+
+    //obtener primera llamada disponible que no tenga extensión asignada
+    $call = Call::where([['id_campaign', $extension->id_campaign],['extension', '']])
+      ->whereRaw("(result = 0 OR result = 2 OR (result = 4 AND updated_at >= '" . Carbon::now() . "'))");
+    if ($last_call)
+      $call = $call->where('id', '>', $last_call->id);
+    $call = $call->orderBy('retries', 'asc')->first();
 
     if ($call)
     {
+      $call->extension = $extension->extension;
+      $call->retries = 1;
+      $call->save();
+
       foreach ($this->inputs as $key => $input)
       {
         if (isset($call->$key))
           $input->setValue($call->$key);
       }
+
+      if ($last_call)
+        $message .= "<br><i>Llamando al siguiente cliente</i>.";
+      else
+        $message .= "Comenzando con las llamadas.";
+    }
+    else
+    {
+      $message .= "<br><strong>No quedan más llamadas</strong>.";
     }
 
     $isRunning = Servitux::isProcessRunning($this->process);
@@ -187,86 +192,30 @@ class CallController extends BaseController
     $params['extension'] = $extension;
 
     if ($call)
+    {
+      if ($last_call)
+        Session::put('alert-warning', $message);
+      else
+        Session::put('alert-success', $message);
       return view($this->datatable_view, $params);
+    }
     else
-      return Redirect::to('/dialer/llamadas')->with('alert-warning', 'No hay llamadas disponibles');
+      return redirect(url('/dialer/llamadas'))->with('alert-warning', 'No hay llamadas disponibles');
   }
 
   public function getStop()
   {
-    return $this->getAllEntities();
-  }
-
-  public function postImport(Request $request)
-  {
-    //validar fichero
-    $validations = array('validations' => ['csv' => 'required|mimes:csv,txt'], 'messages' => [], 'niceNames' => []);
-
-    //validar y guardar
-    $validator = null;
-    $inputs = Servitux::validate($request, $validations, $validator);
-    if (!$inputs)
-      return back()->withErrors($validator)->with('group', 0);
-
-    $file = $request->file('csv');
-
-    //vaciar
-    DB::table('dialer_calls')->delete();
-
-    try {
-      $filename = $file->getPathName();
-      if(!file_exists($filename) || !is_readable($filename))
-        return back()->with('alert-danger', 'El fichero no existe o no es legible')->with('group', 0);
-
-      $data = array();
-      if (($handle = fopen($filename, 'r')) !== FALSE)
-      {
-        while (($row = fgetcsv($handle, 1000, ";")) !== FALSE)
-        {
-          if (count($row) > 1)
-          {
-            $call = new Call();
-            $call->extension = Auth::user()->asterisk_extension;
-            $call->phone = $row[0];
-            $call->name = $row[1];
-            $call->city = $row[2];
-            $call->aux1 = $row[3];
-            $call->aux2 = $row[4];
-            $call->comments = $row[5];
-            $call->result = $row[6];
-            $call->save();
-          }
-        }
-        fclose($handle);
-
-        //marcar la primera fila con asterisk_extension
-        if (Call::all()->count() > 0)
-        {
-          $call = Call::all()->first();
-          $call->active = 1;
-          $call->save();
-        }
-      }
-    } catch (Exception $ex) {
-      return back()->with('alert-danger', $ex->getMessage())->with('group', 0);
+    $calls = Call::where([['extension', Auth::user()->asterisk_extension],['result', 0]])->get();
+    foreach ($calls as $call)
+    {
+      $call->extension = "";
+      $call->save();
     }
 
-    return back()->with('alert-success', "Importados " . Call::where('extension', Auth::user()->asterisk_extension)->count() . " registros")->with('group', 0);
-  }
 
-  public function getExport()
-  {
-    $table = Call::select(array('phone', 'name', 'city', 'aux1', 'aux2', 'comments', 'result'))->where('extension', Auth::user()->asterisk_extension)->get();
-    $output='';
-    foreach ($table as $row)
-      $output.=  implode(";", $row->toArray()) . "\n";
+    Session::put('alert-danger', 'Llamadas paradas a petición del Agente');
 
-    $headers = array(
-      'Content-Type' => 'text/csv',
-      'Content-Disposition' => 'attachment; filename="dialer-' . Auth::user()->asterisk_extension . '.csv"',
-    );
-
-    return response($output, 200, $headers);
+    return $this->getAllEntities();
   }
 
   public function postMachine(Request $request)
@@ -275,28 +224,30 @@ class CallController extends BaseController
     $call = Call::find($id);
     if ($call)
     {
+      $call->extension = "";
       $call->result = $this->DIALER_MACHINE_STATE;
+      $call->created_at = Carbon::now();
       $call->save();
     }
 
-    $call = $this->next($id);
-
-    return $this->getPlay($call);
+    return $this->getPlay($call, "Detectado Contestador.");
   }
 
   public function postLater(Request $request)
   {
     $id = $request['id'];
+    $date = $request['date'];
+
     $call = Call::find($id);
     if ($call)
     {
+      $call->extension = "";
       $call->result = $this->DIALER_LATER_STATE;
+      $call->updated_at = Carbon::parse($date);
       $call->save();
     }
 
-    $call = $this->next($id);
-
-    return $this->getPlay($call);
+    return $this->getPlay($call, "Cliente marcado para llamar más tarde.");
   }
 
   public function postUnallocated(Request $request)
@@ -305,13 +256,13 @@ class CallController extends BaseController
     $call = Call::find($id);
     if ($call)
     {
+      $call->extension = "";
       $call->result = $this->DIALER_UNALLOCATED_NUMBER;
+      $call->created_at = Carbon::now();
       $call->save();
     }
 
-    $call = $this->next($id);
-
-    return $this->getPlay($call);
+    return $this->getPlay($call, "Número Erróneo.");
   }
 
   public function postBusy(Request $request)
@@ -320,57 +271,38 @@ class CallController extends BaseController
     $call = Call::find($id);
     if ($call)
     {
+      $call->extension = "";
       $call->result = $this->DIALER_BUSY_STATE;
+      $call->created_at = Carbon::now();
       $call->save();
     }
 
-    $call = $this->next($id);
-
-    return $this->getPlay($call);
+    return $this->getPlay($call, "El cliente está ocupado.");
   }
 
-  public function getNext()
+  public function postNotAnswer(Request $request)
   {
-    $call = Call::where('active', true)->first();
-    if ($call)
-      $call = $this->next($call->id);
-
-    return $this->getPlay($call);
-  }
-
-  protected function next($id, $where = ">")
-  {
-    Call::where('extension', Auth::user()->asterisk_extension)->update(array('active' => false));
-    $call = Call::where([['extension', Auth::user()->asterisk_extension],['result', 0],['id', $where, $id]])->first();
+    $id = $request['id'];
+    $call = Call::find($id);
     if ($call)
     {
-      $call->active = true;
+      $call->extension = "";
+      $call->created_at = Carbon::now();
       $call->save();
     }
-    return $call;
-  }
 
-  public function getActive($id)
-  {
-    $call = Call::find($id);
-    if (!$call || $call->extension != Auth::user()->asterisk_extension)
-      abort(404);
-
-    Call::where('extension', Auth::user()->asterisk_extension)->update(array('active' => false));
-
-    $call->active = true;
-    $call->save();
-
-    return Redirect::to('/dialer/llamadas');
+    return $this->getPlay($call, 'El cliente no responde.');
   }
 
   public function getReset($id)
   {
     $call = Call::find($id);
-    if (!$call || $call->extension != Auth::user()->asterisk_extension)
+    if (!$call || (!Auth::user()->isAdmin() && $call->extension != Auth::user()->asterisk_extension))
       abort(404);
 
     $call->result = $this->DIALER_PENDING_STATE;
+    $call->extension = "";
+    $call->retries = 0;
     $call->save();
 
     return Redirect::to('/dialer/llamadas');

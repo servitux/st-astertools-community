@@ -41,41 +41,65 @@
 @endsection
 
 @section('buttons')
-  <a href='#' class="btn btn-primary btn-app btn-import bg-green"><i class="fa fa-download"></i>Importar</a>
-  <form id="import" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postImport') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-    {{ csrf_field() }}
-    <input id='csv' name='csv' type='file'>
-  </form>
-  <a href='{{ action('\App\Modules\Dialer\Controllers\CallController@getExport') }}' class="btn btn-primary btn-app btn-export bg-green"><i class="fa fa-upload"></i>Exportar</a>
-
-  <a href='#' class="btn btn-primary btn-app btn-machine bg-orange pull-right disabled"><i class="fa fa-volume-up"></i>Contestador</a>
-  @if ($call)
-    <form id="machine" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postMachine') }}" method="POST" style="display: none;">
-      {{ csrf_field() }}
-      <input name='id' type="hidden" value="{{$call->id}}">
-    </form>
-  @endif
-  <a href='#' class="btn btn-primary btn-app btn-later bg-orange pull-right disabled"><i class="fa fa-clock-o"></i>Más tarde</a>
-  @if ($call)
-    <form id="later" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postLater') }}" method="POST" style="display: none;">
-      {{ csrf_field() }}
-      <input name='id' type="hidden" value="{{$call->id}}">
-    </form>
-  @endif
-  @if ($call)
-    <form id="busy" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postBusy') }}" method="POST" style="display: none;">
-      {{ csrf_field() }}
-      <input name='id' type="hidden" value="{{$call->id}}">
-    </form>
-  @endif
-  @if ($call)
-    <form id="unallocated" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postUnallocated') }}" method="POST" style="display: none;">
-      {{ csrf_field() }}
-      <input name='id' type="hidden" value="{{$call->id}}">
-    </form>
-  @endif
-  <a href='{{ action('\App\Modules\Dialer\Controllers\CallController@getStop') }}' class="btn btn-primary btn-app btn-stop bg-red pull-right{{ (!$call ? " disabled" : "") }}"><i class="fa fa-stop"></i>Parar</a>
-  <a href='{{ action('\App\Modules\Dialer\Controllers\CallController@getPlay') }}' class="btn btn-primary btn-app btn-play bg-blue pull-right{{ (!$isRunning || $call ? " disabled" : "") }}"><i class="fa fa-play"></i>Comenzar</a>
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="col-lg-6">
+        @if ($isRunning)
+          {{ AdminLTE::CallOut("Event Handler", "Event Handler iniciado y funcionando", "info", "handler") }}
+        @else
+          {{ AdminLTE::CallOut("Event Handler", "Event Handler está parado. Por favor, inicielo para poder comenzar a funcionar", "danger", "handler") }}
+        @endif
+      </div>
+      <div class="col-lg-6">
+        @if ($callState == 0)
+          {{ AdminLTE::CallOut("Llamadas Paradas", "Pulse ( <i class='fa fa-play'></i> ) para iniciar las llamadas", "danger") }}
+        @else
+          @if ($call)
+            {{ AdminLTE::CallOut("Campaña en Proceso", "Pulse ( <i class='fa fa-stop'></i> ) para parar las llamadas", "success") }}
+          @else
+            {{ AdminLTE::CallOut("Campaña en Pausa", "No existen llamadas disponibles o el proceso está parado", "warning") }}
+          @endif
+        @endif
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="col-lg-6">
+        <div style="font-size: 50px; font-weight: bold">
+          {{ (Auth::user()->getExtension() ? Auth::user()->getExtension()->extension : "Sin Extensión") }}<br>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <button class="btn btn-primary btn-app btn-machine bg-orange pull-right disabled"><i class="fa fa-volume-up"></i>Contestador</button>
+        @if ($call)
+          <form id="machine" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postMachine') }}" method="POST" style="display: none;">
+            {{ csrf_field() }}
+            <input name='id' type="hidden" value="{{$call->id}}">
+          </form>
+        @endif
+        <button class="btn btn-primary btn-app btn-later bg-orange pull-right disabled"><i class="fa fa-clock-o"></i>Más tarde</button>
+        @if ($call)
+          <form id="busy" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postBusy') }}" method="POST" style="display: none;">
+            {{ csrf_field() }}
+            <input name='id' type="hidden" value="{{$call->id}}">
+          </form>
+        @endif
+        @if ($call)
+          <form id="unallocated" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postUnallocated') }}" method="POST" style="display: none;">
+            {{ csrf_field() }}
+            <input name='id' type="hidden" value="{{$call->id}}">
+          </form>
+        @endif
+        @if ($call)
+          <form id="notanswer" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postNotAnswer') }}" method="POST" style="display: none;">
+            {{ csrf_field() }}
+            <input name='id' type="hidden" value="{{$call->id}}">
+          </form>
+        @endif
+        <a href='{{ action('\App\Modules\Dialer\Controllers\CallController@getStop') }}' class="btn btn-primary btn-app btn-stop bg-red pull-right{{ (!$call ? " disabled" : "") }}"><i class="fa fa-stop"></i>Parar</a>
+        <a href='{{ action('\App\Modules\Dialer\Controllers\CallController@getPlay') }}' class="btn btn-primary btn-app btn-play bg-blue pull-right{{ (!$isRunning || $call ? " disabled" : "") }}"><i class="fa fa-play"></i>Comenzar</a>
+      </div>
+    </div>
+  </div>
 @endsection
 
 @section('breadcrumb')
@@ -88,26 +112,6 @@
 
 <!-- Main content -->
 <section class="content">
-  <div class="row">
-    <div class="col-md-6">
-      @if ($isRunning)
-        {{ AdminLTE::CallOut("Event Handler", "Event Handler iniciado y funcionando", "success", "handler") }}
-      @else
-        {{ AdminLTE::CallOut("Event Handler", "Event Handler está parado. Por favor, inicielo para poder comenzar a funcionar", "danger", "handler") }}
-      @endif
-    </div>
-    <div class="col-md-6">
-      @if ($callState == 0)
-        {{ AdminLTE::CallOut("Llamadas Paradas", "El proceso de llamadas automáticas está parado. Pulse ( <i class='fa fa-play'></i> ) para iniciar las llamadas", "danger") }}
-      @else
-        @if ($call)
-          {{ AdminLTE::CallOut("Campaña en Proceso", "Llamando a <strong>" . $call->phone . "</strong>. Pulse ( <i class='fa fa-stop'></i> ) para parar las llamadas", "success") }}
-        @else
-          {{ AdminLTE::CallOut("Campaña en Pausa", "No existen llamadas disponibles o el proceso está parado", "warning") }}
-        @endif
-      @endif
-    </div>
-  </div>
   <div class="row">
     <div class="col-md-6">
       <div class="box box-primary">
@@ -155,15 +159,46 @@
         //columnas del data table
         $columns = array();
         $columns[] = array('data' => 'id_string', 'title' => 'Id');
+        $columns[] = array('data' => 'extension', 'title' => 'Extensión');
         $columns[] = array('data' => 'phone_string', 'title' => 'Teléfono');
-        $columns[] = array('data' => 'name_string', 'title' => 'Nombre');
+        $columns[] = array('data' => 'name', 'title' => 'Nombre');
         $columns[] = array('data' => 'city', 'title' => 'Ciudad');
+        $columns[] = array('data' => 'aux1', 'title' => 'Auxiliar 1');
+        $columns[] = array('data' => 'aux2', 'title' => 'Auxiliar 2');
         $columns[] = array('data' => 'result_string', 'title' => 'Resultado');
-        $columns[] = array('data' => 'comments', 'title' => 'Commentarios');
-        $columns[] = array('data' => 'options', 'title' => 'Opciones', 'width' => '25px', 'sort' => false);
+        $columns[] = array('data' => 'updated_at_string', 'title' => 'Llamar a partir de');
+        $columns[] = array('data' => 'retries', 'title' => 'Intentos');
+        $columns[] = array('data' => 'comments', 'title' => 'Comentarios');
+        $columns[] = array('data' => 'options', 'title' => 'Opciones', 'width' => '70px');
         //html5 datatable
         AdminLTE::DataTable_UI("dataTable", "Listado de Teléfonos", $columns);
       @endphp
+    </div>
+  </div>
+
+
+  <div class="modal fade in" id="modal_later">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span></button>
+          <h4 class="modal-title">Llamar en otro momento</h4>
+        </div>
+        <div class="modal-body">
+          <p>Introduce la Fecha y la Hora a la que el cliente quiere que le llamen:</p>
+          @if ($call)
+            <form id="later" action="{{ action('\App\Modules\Dialer\Controllers\CallController@postLater') }}" method="POST">
+              {{ csrf_field() }}
+              <input name='id' type="hidden" value="{{$call->id}}">
+              <input class='form-control' type="datetime-local" name="date" value="">
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Guardar</button>
+              </div>
+            </form>
+          @endif
+        </div>
+      </div>
     </div>
   </div>
 
@@ -188,6 +223,7 @@
 
     var params = null //guarda parametros para ami
     var seconds = 0; //segundos para contar en pantalla
+    var callChannel = null; //se guarda por si se paran las llamadas en medio de una llamada al cliente
 
     //timeout
     var timeout = {{$config->timeout}}; //timeout de respuesta del cliente o mia
@@ -219,19 +255,19 @@
               window.location = '{{ url('dialer/llamadas/stop') }}';
             }
           });
-      console.log('Connection Error');
+      console.error('Connection Error: ' + e.message);
 
       $('#handler').removeClass('callout-success').addClass('callout-warning');
       $('#handler p').html('No es posible conectar con {{ $config->eventhandler_host}}:{{ $config->eventhandler_port }}');
     }
     // Add a connect listener
     socket.on('connect',function() {
-      console.log('Dialer conectado a {{ $config->eventhandler_host}}:{{ $config->eventhandler_port }}');
+      console.info('Dialer conectado a {{ $config->eventhandler_host}}:{{ $config->eventhandler_port }}');
     });
     // Add a disconnect listener
     socket.on('disconnect',function() {
       //error({message: 'Cliente Desconectado'});
-      console.log('Dialer desconectado');
+      console.info('Dialer desconectado');
     });
     // Add a connect listener
     socket.on('event',function(e) {
@@ -253,23 +289,23 @@
                 break;
 
               case "5": //ocupado
-                console.log('------------------------- Ha colgado antes de cogerlo!!!!');
+                console.info('ST-AsterTools: El cliente ha colgado antes de cogerlo.');
                 $('form[id=busy]').submit();
                 break;
 
               case "3": //no contesta
-                console.log('------------------------- El cliente no contesta. Continuar');
-                window.location = '{{ url('dialer/llamadas/next') }}';
+                console.info('ST-AsterTools: El cliente no contesta.');
+                $('form[id=notanswer]').submit();
                 break;
 
               case "1": //número erróneo
               case "8": //número erróneo
-                console.log('------------------------- Número erroneo. Marcar y continuar');
+                console.warn('ST-AsterTools: Número erroneo.');
                 $('form[id=unallocated]').submit();
                 break;
 
               default: //estado no controlado
-                error({message: 'Estado no controlado'}, true);
+                error({message: 'Estado no controlado: ' + event.reason + ' (' + event.response + ')'}, true);
                 break;
             }
           }
@@ -280,7 +316,7 @@
           {
             switch (event.cause) {
               case '16': //hemos colgado tras hablar
-                console.log('------------------------------------ Hemos colgado. Activar botón de Guardar y Continuar');
+                console.info('ST-AsterTools: La conversación ha terminado. Rellene los datos y pulse Guardar para continuar.');
                 $('form button').prop('disabled', false);
                 $('.btn-machine').removeClass('disabled');
                 $('.btn-later').removeClass('disabled');
@@ -289,7 +325,7 @@
               case '17': //el agente está ocupado (llamada en curso)
               case '18': //no responde el agente (no coge el teléfono)
               case '21': //el agente rechaza la llamada (botón rechazar)
-                console.log('------------------------------------ El agente está ocupado, rechaza la llamada, o no coge el teléfono. Parar las llamadas');
+                console.warn('ST-AsterTools: El agente está ocupado, rechaza la llamada, o no coge el teléfono. Parando las llamadas');
                 window.location = '{{ url('dialer/llamadas/stop') }}';
                 break;
             }
@@ -300,10 +336,18 @@
           var channel = event.channel.substring(0, {{ strlen($extension->channel) }});
           switch (event.channelstate)
           {
+            case '5': //Llamando al cliente
+              if (event.calleridnum == '{{$call->phone}}')
+              {
+                console.info('ST-AsterTools: El teléfono del cliente está sonando ['+event.channel+'].');
+                callChannel = event.channel;
+              }
+              break;
+
             case '6': //descolgado
               if (channel == '{{$extension->channel}}')
               {
-                console.log('-------------------------- he desgolgado yo!!!!');
+                console.info('ST-AsterTools: El agente ha cogido la llamada.');
                 $('#callout').removeClass('callout-success').addClass('callout-info');
                 $('#callout h4').html('Proceso de llamadas en Pausa');
                 $('#callout p').html("Tome nota de lo hablado con el cliente y pulse el botón <strong>Guardar Datos y Continuar</strong>");
@@ -320,10 +364,10 @@
 
     if (socket != null)
     {
-      params = { extension: '{{ Auth::user()->asterisk_extension }}', phone: '{{ $call->phone }}', name: '{{ $call->name }}', timeout: timeout*1000};
+      params = { extension: '{{ Auth::user()->asterisk_extension }}', phone: '{{ $call->phone }}', name: '{{ $call->name }}', channel: '{{ $extension->channel }}', outer_number: '{{ $extension->outer_number }}', timeout: timeout*1000};
       setTimeout(function()
       {
-        console.log('------------------------------------ Lanzando llamada con un Timeout de ' + callTimer + ' segundos');
+        console.log('Lanzando llamada con un Timeout de ' + callTimer + ' segundos.');
 
         seconds = 0;
         intervalId = setInterval(function() {
@@ -331,7 +375,7 @@
           $('#callout h4').html("Campaña en Proceso: " + (callTimer - seconds));
           if (callTimer - seconds == 0)
           {
-            console.log('------------------------------------ Llamada lanzanda. Esperando respuesta del cliente');
+            console.log('Llamada lanzanda. Esperando respuesta del cliente.');
             socket.emit('call', params);
 
             clearInterval(intervalId);
@@ -354,6 +398,8 @@
   {{ AdminLTE::Menu_Active("dialer") }}
   {{ AdminLTE::Menu_Active("dialer_llamadas") }}
 
+  $('#modal_later').modal('hide');
+
   @if($errors->first("csv"))
     $.notify({ message: $('<textarea />').html("{{$errors->first("csv")}}").text() },{ type: "error", placement: { from: "top", align: "center" } });
   @endif
@@ -374,11 +420,9 @@
   });
   @endif
   $(".btn-machine").on('click', function(e) {
-    e.preventDefault = true;
     $('form[id=machine]').submit();
   });
   $(".btn-later").on('click', function(e) {
-    e.preventDefault = true;
-    $('form[id=later]').submit();
+    $('#modal_later').modal('show');
   });
 @endsection

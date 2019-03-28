@@ -96,6 +96,8 @@ class ConfigController extends BaseController
 
   public function putEntity(Request $request, $id = 1)
   {
-    return parent::putEntity($request, 1);
+    parent::putEntity($request, 1);
+
+    return redirect(url($this->url))->with('alert-success', 'Registro modificado con éxito');
   }
 }

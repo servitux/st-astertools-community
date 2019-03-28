@@ -44,10 +44,10 @@ class Call extends Model
           return "<div><li class='fa fa-phone-square text-red'></li> Ocupado</div>";
           break;
         case 3: //contestador
-          return "<div><li class='fa fa-volume-up text-red'></li> Contestador</div>";
+          return "<div><li class='fa fa-volume-up text-yellow'></li> Contestador</div>";
           break;
         case 4: //mas tarde
-          return "<div><li class='fa fa-clock-o text-red'></li> Más tarde</div>";
+          return "<div><li class='fa fa-clock-o text-yellow'></li> Más tarde</div>";
           break;
         case 5: //no interesado
           return "<div><li class='fa fa-times text-red'></li> No interesado</div>";
@@ -59,5 +59,10 @@ class Call extends Model
         return "<div><li class='fa fa-window-close text-red'></li> Estado Desconocido</div>";
           break;
       }
+    }
+
+    public function getResetUrl()
+    {
+      return action('\App\Modules\Dialer\Controllers\CallController@getReset', array('id' => $this->id));
     }
 }

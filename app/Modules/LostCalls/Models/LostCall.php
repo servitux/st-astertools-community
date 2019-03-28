@@ -2,7 +2,7 @@
 
 /**
  * @package     ST-AsterTools
- * @subpackage  app/Modules/PhoneBook/Migrations
+ * @subpackage  app/Modules/LostCalls/Models
  * @author      Servitux Servicios Informáticos, S.L.
  * @copyright   (C) 2017 - Servitux Servicios Informáticos, S.L.
  * @license     http://www.gnu.org/licenses/gpl-3.0-standalone.html
@@ -23,37 +23,28 @@
  * ST-AsterTools. If not, see http://www.gnu.org/licenses/.
  */
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
+namespace App\Modules\LostCalls\Models;
 
-class AddPhonebookPhonesTable extends Migration
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
+
+class LostCall extends Model
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    protected $table = "lostcalls_calls";
+
+    public static function exists()
     {
-        Schema::create('phonebook_phones', function (Blueprint $table) {
-            $table->increments('id');
-            $table->char('first_name', 255);
-            $table->char('last_name', 255)->default(NULL);
-            $table->char('phone1', 50);
-            $table->char('phone2', 50)->default(NULL);
-            $table->char('phone3', 50)->default(NULL);
-            $table->timestamps();
-        });
+	    $lost = Schema::connection("mysql")->hasTable("lostcalls_calls");
+      if (!$lost) return "No existe o no se encuentra la tabla de llamadas perdidas. Compruebe la configuración en config/database.php, en la conexión 'asterisk'";
+
+      return true;
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function getState()
     {
-        Schema::dropIfExists('phonebook_phones');
+      if ($this->state == "0" || $this->state == "")
+        return "<span class='badge bg-red'>Perdida</span>";
+      else
+        return "<span class='badge bg-blue'>Devuelta por ".$this->state."</span>";
     }
 }

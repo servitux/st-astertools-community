@@ -2,7 +2,7 @@
 
 /**
  * @package     ST-AsterTools
- * @subpackage  app/Modules/PhoneBook/Migrations
+ * @subpackage  app/Modules/CallBilling
  * @author      Servitux Servicios Informáticos, S.L.
  * @copyright   (C) 2017 - Servitux Servicios Informáticos, S.L.
  * @license     http://www.gnu.org/licenses/gpl-3.0-standalone.html
@@ -22,38 +22,15 @@
  * You should have received a copy of the GNU General Public License along with
  * ST-AsterTools. If not, see http://www.gnu.org/licenses/.
  */
+namespace App\Modules\LostCalls;
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
+use App\Modules\LostCalls\Models\LostCall;
 
-class AddPhonebookPhonesTable extends Migration
+class Init
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public static function check()
     {
-        Schema::create('phonebook_phones', function (Blueprint $table) {
-            $table->increments('id');
-            $table->char('first_name', 255);
-            $table->char('last_name', 255)->default(NULL);
-            $table->char('phone1', 50);
-            $table->char('phone2', 50)->default(NULL);
-            $table->char('phone3', 50)->default(NULL);
-            $table->timestamps();
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('phonebook_phones');
+      //existe la tabla CDR?
+      return LostCall::exists();
     }
 }

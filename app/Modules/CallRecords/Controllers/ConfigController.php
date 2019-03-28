@@ -74,4 +74,10 @@ class ConfigController extends BaseController
     $config = Config::all()->first();
     return parent::putEntity($request, $config->id);
   }
+
+  public function afterSave($inputs, $model)
+  {
+    return redirect(url('callrecords/config'))->with('alert-success', "Configuración modificada con éxito");
+  }
+
 }

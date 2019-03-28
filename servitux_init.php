@@ -29,12 +29,12 @@ $ret = exec("chmod -R 777 storage/ bootstrap/cache");
 //git
 if (!file_exists(".git"))
 {
-  if (strtoupper(ask("Do you want to download ST-Astertools from Git? (Y/n)", "Y")) == "Y")
+  if (ask("Do you want to download ST-Astertools from Git? (Y/n)", "Y") == "Y")
   {
     info('Downloading git project');
 
     $ret = exec("git init .");
-    $ret = exec("git remote add -t \* -f origin https://github.com/servitux/st-astertools-community.git");
+    $ret = exec("git remote add -t \* -f origin http://git.servitux.com/servitux/st-astertools-community.git");
     $ret = exec("git fetch origin master");
     $ret = exec("git reset --hard FETCH_HEAD");
 
@@ -106,8 +106,24 @@ if (strpos($file, "DB_DATABASE=homestead") > 0)
 }
 else
 {
-  info('.env is already changed');
+  error('.env is already changed');
 }
+
+//modificar .env
+$file = file_get_contents("config/app.php");
+if (strpos($file, "'timezone' => 'UTC'") > 0)
+{
+  info('Updating config.app Time Zone');
+
+  $timezone = exec('cat /etc/timezone');
+  $file = str_replace("'timezone' => 'UTC'", "'timezone' => '$timezone'", $file);
+  file_put_contents("config/app.php", $file);
+}
+else
+{
+  error('config.app is already changed');
+}
+
 
 //migrate
 info('Executing Migrations');
@@ -135,7 +151,7 @@ if ($response == "Y")
   //}
   exec("wget https://github.com/almasaeed2010/AdminLTE/archive/v2.3.7.tar.gz -O public/assets/v2.3.7.tar.gz");
   exec("cd public/assets/ && tar xzf v2.3.7.tar.gz");
-  exec("rm v2.3.7.tar.gz");
+  exec("rm public/assets/v2.3.7.tar.gz");
 }
 
 //Sockets.io-client

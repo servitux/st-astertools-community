@@ -26,6 +26,32 @@
 <!-- Main content -->
 <section class="content">
   <div class="row">
+    <div class="col-md-3">
+      <form name="year" method="get" action="{{url('callrecords/llamadas')}}">
+        <select class="form-control" name="year" id="year">
+          @php
+            $yearNow = \Carbon\Carbon::now()->year;
+            $year = Request::has('year') ? Request::get('year') : \Carbon\Carbon::now()->year;
+          @endphp
+          @for ($i = $yearNow - 10; $i <= $yearNow; $i++)
+            <option value="{{$i}}" {{ $year==$i ? "selected" : ""}}>{{$i}}</option>
+          @endfor
+        </select>
+      </form>
+    </div>
+    <div class="col-md-offset-3 col-md-6">
+      <div class="progress-group">
+        <span class="progress-text">Espacio Usado de Disco</span>
+        <!-- <span class="progress-number"><b>{{ $disk['used'] }}</b>/{{ $disk['total'] }}</span>-->
+        <span class="progress-number"><b>{{ $disk['percent'] }}</span>
+
+        <div class="progress sm">
+          <div class="progress-bar progress-bar-{{$disk['color']}}" style="width: {{ $disk['percent'] }}"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
     @php
       //columnas del data table
       $columns = array();
@@ -47,7 +73,7 @@
 @section('script')
   @php
     //script datatable
-    AdminLTE::DataTable_Script("dataTable", $columns, url("/callrecords/llamadas/datatable"), 50, 2, 'asc');
+    AdminLTE::DataTable_Script("dataTable", $columns, url("/callrecords/llamadas/datatable?year=$year"), 50, 2, 'asc');
   @endphp
 @endsection
 
@@ -85,5 +111,9 @@
     }).then(function () {
       $('form[id=clean]').submit();
     });
+  });
+
+  $('select[name=year]').change(function() {
+    $('form[name=year]').submit();
   });
 @endsection

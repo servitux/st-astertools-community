@@ -7,14 +7,14 @@
     "mysql": {
         "host": "127.0.0.1",
         "port": "3306",
-        "user": "CHANGE_ME",
-        "password": "CHANGE_ME"
+        "user": "root",
+        "password": "c77a81"
     },
     "asterisk": {
-        "host": "127.0.0.1",
+        "host": "10.6.0.20",
         "port": "5038",
-        "user": "CHANGE_ME",
-        "password": "CHANGE_ME",
+        "user": "admin",
+        "password": "kWz6YXQC2DpOQ",
         "format": "json"
     },
     "events": {
@@ -23,6 +23,5 @@
         "ExtensionStatus": "on",
         "OriginateResponse": "on"
     },
-
-    "logpath": ""
+    "logpath": "/var/log/astertools.eventhandler.log"
 }

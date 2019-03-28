@@ -22,6 +22,9 @@ php
 
 ## Instalación
 
+### Crear Base de datos
+Debe tener creada una base de datos en MariaDB/MySQL y un usuario con permisos sobre dicha base de datos antes de comenzar la instalación.
+
 ### Instalar composer
 ```
 curl -sS https://getcomposer.org/installer | php

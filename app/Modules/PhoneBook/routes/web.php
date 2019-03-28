@@ -24,25 +24,28 @@
  */
 
 Route::group(['middleware' => ['web', 'auth']], function() {
-  Route::get('/agenda/telefonos', 'App\Modules\PhoneBook\Controllers\PhoneController@getAllEntities');
-  Route::get('/agenda/telefonos/datatable', 'App\Modules\PhoneBook\Controllers\PhoneController@getEntitiesDataTable');
-  Route::get('/agenda/telefono/{id}', 'App\Modules\PhoneBook\Controllers\PhoneController@getEntity');
-  Route::get('/agenda/telefono/{id}/edit', 'App\Modules\PhoneBook\Controllers\PhoneController@editEntity');
-  Route::post('/agenda/telefono/new', 'App\Modules\PhoneBook\Controllers\PhoneController@postEntity');
-  Route::put('/agenda/telefono/{id}', 'App\Modules\PhoneBook\Controllers\PhoneController@putEntity');
-  Route::delete('/agenda/telefono/{id}', 'App\Modules\PhoneBook\Controllers\PhoneController@delEntity');
+   Route::get('/agenda/telefonos', 'App\Modules\PhoneBook\Controllers\PhoneController@getAllEntities');
+   Route::get('/agenda/telefonos/datatable', 'App\Modules\PhoneBook\Controllers\PhoneController@getEntitiesDataTable');
+   Route::get('/agenda/telefonos/call', 'App\Modules\PhoneBook\Controllers\PhoneController@callPhone');
+   Route::post('/agenda/telefonos/import', 'App\Modules\PhoneBook\Controllers\PhoneController@postImport');
+   Route::get('/agenda/telefono/{id}', 'App\Modules\PhoneBook\Controllers\PhoneController@getEntity');
+   Route::get('/agenda/telefono/{id}/edit', 'App\Modules\PhoneBook\Controllers\PhoneController@editEntity');
+   Route::post('/agenda/telefono/new', 'App\Modules\PhoneBook\Controllers\PhoneController@postEntity');
+   Route::put('/agenda/telefono/{id}', 'App\Modules\PhoneBook\Controllers\PhoneController@putEntity');
+   Route::delete('/agenda/telefono/{id}', 'App\Modules\PhoneBook\Controllers\PhoneController@delEntity');
+   Route::post('/agenda/telefono/external', 'App\Modules\PhoneBook\Controllers\PhoneController@postExternal');
 
-  Route::get('/agenda/modulos', 'App\Modules\PhoneBook\Controllers\ModuleController@getAllEntities');
-  Route::get('/agenda/modulos/datatable', 'App\Modules\PhoneBook\Controllers\ModuleController@getEntitiesDataTable');
-  Route::get('/agenda/modulo/{id}', 'App\Modules\PhoneBook\Controllers\ModuleController@getEntity');
-  Route::get('/agenda/modulo/{id}/edit', 'App\Modules\PhoneBook\Controllers\ModuleController@editEntity');
-  Route::post('/agenda/modulo/new', 'App\Modules\PhoneBook\Controllers\ModuleController@postEntity');
-  Route::put('/agenda/modulo/{id}', 'App\Modules\PhoneBook\Controllers\ModuleController@putEntity');
-  //Route::delete('/agenda/modulos/{id}', 'App\Modules\PhoneBook\Controllers\ModuleController@delEntity');
-  Route::post('/agenda/modulo/{id}/allow', 'App\Modules\PhoneBook\Controllers\ModuleController@allowModule');
-  Route::post('/agenda/modulo/{id}/token', 'App\Modules\PhoneBook\Controllers\ModuleController@changeToken');
+   Route::get('/agenda/modulos', 'App\Modules\PhoneBook\Controllers\ModuleController@getAllEntities');
+   Route::get('/agenda/modulos/datatable', 'App\Modules\PhoneBook\Controllers\ModuleController@getEntitiesDataTable');
+   Route::get('/agenda/modulo/{id}', 'App\Modules\PhoneBook\Controllers\ModuleController@getEntity');
+   Route::get('/agenda/modulo/{id}/edit', 'App\Modules\PhoneBook\Controllers\ModuleController@editEntity');
+   Route::post('/agenda/modulo/new', 'App\Modules\PhoneBook\Controllers\ModuleController@postEntity');
+   Route::put('/agenda/modulo/{id}', 'App\Modules\PhoneBook\Controllers\ModuleController@putEntity');
+   //Route::delete('/agenda/modulos/{id}', 'App\Modules\PhoneBook\Controllers\ModuleController@delEntity');
+   Route::post('/agenda/modulo/{id}/allow', 'App\Modules\PhoneBook\Controllers\ModuleController@allowModule');
+   Route::post('/agenda/modulo/{id}/token', 'App\Modules\PhoneBook\Controllers\ModuleController@changeToken');
 
-  Route::get('/agenda/ayuda', function() {
-    return view('PhoneBook::ayuda');
-  });
-});
+   Route::get('/agenda/ayuda', function() {
+     return view('PhoneBook::ayuda');
+   });
+ });

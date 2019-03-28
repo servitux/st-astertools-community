@@ -90,7 +90,7 @@
               Mediante el botón <span class="btn btn-primary btn-xs"><i class="fa fa-object-group"></i> Nueva Campaña</span> podrá crear nuevas campañas.
             </p>
             <p>
-              <a href='{{ asset('assets/images/help/dialer/campanya.png') }}' target="_blank"><img src="{{ asset('assets/images/help/call_billing/campanya.png') }}" width="950"></a>
+              <a href='{{ asset('assets/images/help/dialer/campanya.png') }}' target="_blank"><img src="{{ asset('assets/images/help/dialer/campanya.png') }}" width="950"></a>
             </p>
             <p>
               Una vez en la ficha de una Campaña concreta, podemos ver sus datos básicos, así como las extensiones asociadas a la campaña.<br><br>

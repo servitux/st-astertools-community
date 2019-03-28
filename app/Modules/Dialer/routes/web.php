@@ -38,6 +38,7 @@ Route::group(['middleware' => ['web', 'auth']], function() {
   Route::delete('/dialer/campanya/{id}', 'App\Modules\Dialer\Controllers\CampanyaController@delEntity');
   Route::get('/dialer/campanya/{id}/datatable', 'App\Modules\Dialer\Controllers\CampanyaController@getExtensionsDataTable');
   Route::get('/dialer/campanya/{id}/datatableCalls', 'App\Modules\Dialer\Controllers\CampanyaController@getCallsDataTable');
+  Route::post('/dialer/campanya/{id}/import', 'App\Modules\Dialer\Controllers\CampanyaController@postImport');
   Route::get('/dialer/campanya/{id}/export', 'App\Modules\Dialer\Controllers\CampanyaController@getExport');
 
   //extensiones
@@ -51,11 +52,9 @@ Route::group(['middleware' => ['web', 'auth']], function() {
   Route::post('/dialer/extension/{id}/allow', 'App\Modules\Dialer\Controllers\ExtensionController@allowExtension');
 
   //llamadas
-  Route::get('/dialer/llamadas', 'App\Modules\Dialer\Controllers\CallController@getAllEntities');
+  Route::get('/dialer/llamadas', 'App\Modules\Dialer\Controllers\CallController@getAllEntities')->name('llamadas');
   Route::get('/dialer/llamadas/datatable', 'App\Modules\Dialer\Controllers\CallController@getEntitiesDataTable');
   Route::put('/dialer/llamadas/{id}', 'App\Modules\Dialer\Controllers\CallController@putEntity');
-  Route::post('/dialer/llamadas/import', 'App\Modules\Dialer\Controllers\CallController@postImport');
-  Route::get('/dialer/llamadas/export', 'App\Modules\Dialer\Controllers\CallController@getExport');
   Route::get('/dialer/llamada/{id}/active', 'App\Modules\Dialer\Controllers\CallController@getActive');
   Route::get('/dialer/llamada/{id}/reset', 'App\Modules\Dialer\Controllers\CallController@getReset');
 
@@ -65,9 +64,9 @@ Route::group(['middleware' => ['web', 'auth']], function() {
   Route::post('/dialer/llamadas/later', 'App\Modules\Dialer\Controllers\CallController@postLater');
   Route::post('/dialer/llamadas/busy', 'App\Modules\Dialer\Controllers\CallController@postBusy');
   Route::post('/dialer/llamadas/unallocated', 'App\Modules\Dialer\Controllers\CallController@postUnallocated');
+  Route::post('/dialer/llamadas/notanswer', 'App\Modules\Dialer\Controllers\CallController@postNotAnswer');
   Route::get('/dialer/llamadas/play', 'App\Modules\Dialer\Controllers\CallController@getPlay');
   Route::get('/dialer/llamadas/stop', 'App\Modules\Dialer\Controllers\CallController@getStop');
-  Route::get('/dialer/llamadas/next', 'App\Modules\Dialer\Controllers\CallController@getNext');
 
   Route::get('/dialer/ayuda', function() {
     return view('Dialer::ayuda');

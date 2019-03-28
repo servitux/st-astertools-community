@@ -37,13 +37,18 @@ class Record extends Model
     {
       switch ($this->type) {
         case 'out':
+        case 'external':
           return "Saliente";
 
         case 'rg':
           return "Entrante";
 
         case "exten":
+        case "internal":
           return "Interna";
+
+        case "ondemand":
+          return "Bajo Demanda";
 
         default:
           return "Desconocida";

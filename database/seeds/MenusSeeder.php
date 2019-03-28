@@ -54,6 +54,9 @@ class MenusSeeder extends Seeder
       $menus[] = array('parent' => 'webservices', 'menu' => 'extensiones', 'name' => 'Extensiones', 'order' => 2, 'url' => env('APP_URL') . '/webservices/extensiones', 'profile' => '');
       $menus[] = array('parent' => 'webservices', 'menu' => 'modulos', 'name' => 'Módulos', 'order' => 3, 'url' => env('APP_URL') . '/webservices/modulos', 'profile' => 'A');
 
+      //lost calls
+      $menus[] = array('parent' => 'lostcalls', 'menu' => 'llamadas', 'name' => 'Llamadas Perdidas', 'order' => 1, 'url' => env('APP_URL') . '/lostcalls/llamadas', 'profile' => '');
+
       foreach ($menus as $menu)
         Menu::create($menu);
     }

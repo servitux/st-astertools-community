@@ -55,6 +55,10 @@
                   <i>Especialmente útil para controlar la formación de sus empleados.</i>
                 </li>
                 <li>
+                  <strong><i class="fa fa-phone-square"></i> <a href='{{ url('lostcalls/ayuda') }}'>Lost Calls</a></strong>: Visualiza, busca y devuelve las llamadas perdidas.<br>
+                  <i>Especialmente útil para no perder ninguna llamada importante.</i>
+                </li>
+                <li>
                   <strong><i class="fa fa-headphones"></i> <a href='{{ url('dialer/ayuda') }}'>Dialer</a></strong>: Marcador automático para el control del flujo de llamadas con control de respuesta y creación de
                   campañas.<br>
                   <i>Especialmente útil para campañas de marketing telefónico.</i>

@@ -36,6 +36,11 @@
   @endphp
   @if ($new != 1)
     <a href='{{ url('dialer/campanya/new') }}' class="btn btn-app bg-blue"><li class="fa fa-object-group"></li> Nueva Campaña</a>
+    <a href='#' class="btn btn-primary btn-app btn-import bg-green"><i class="fa fa-download"></i>Importar</a>
+    <form id="import" action="{{ action('\App\Modules\Dialer\Controllers\CampanyaController@postImport', array('id' => $entity->id)) }}" method="POST" enctype="multipart/form-data" style="display: none;">
+      {{ csrf_field() }}
+      <input id='csv' name='csv' type='file'>
+    </form>
     <a href='{{ action('\App\Modules\Dialer\Controllers\CampanyaController@getExport', array("id" => $entity->id)) }}' class="btn btn-primary btn-app btn-export bg-green"><i class="fa fa-upload"></i>Exportar</a>
   @endif
 
@@ -110,10 +115,10 @@
           $columns2 = array();
           $columns2[] = array('data' => 'extension_string', 'title' => 'Extension');
           $columns2[] = array('data' => 'phone_string', 'title' => 'Teléfono');
-          $columns2[] = array('data' => 'name_string', 'title' => 'Nombre');
+          $columns2[] = array('data' => 'name', 'title' => 'Nombre');
           $columns2[] = array('data' => 'city', 'title' => 'Ciudad');
           $columns2[] = array('data' => 'result_string', 'title' => 'Resultado');
-          $columns2[] = array('data' => 'comments', 'title' => 'Commentarios');
+          $columns2[] = array('data' => 'comments', 'title' => 'Comentarios');
           //html5 datatable
           AdminLTE::DataTable_UI("dataTableCalls", "Listado de Llamadas", $columns2);
         @endphp
@@ -146,4 +151,10 @@
     $('form[id=group]').val('POST');
     $('form[id=group]').find('input,textarea,select').filter(':visible:first').select().focus();
   @endif
+  $('.btn-import').on('click', function() {
+    $('input[name=csv]').trigger('click');
+  });
+  $('input[name=csv]').on('change', function() {
+    $('form[id=import]').submit();
+  });
 @endsection

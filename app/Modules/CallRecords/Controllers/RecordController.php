@@ -52,7 +52,19 @@ class RecordController extends Controller
 
     public function getAllEntities()
     {
-      return view("CallRecords::llamadas");
+      $disk_free_space = disk_free_space($this->CALLRECORDS_RECORDS_PATH);
+      $disk_total_space = disk_total_space($this->CALLRECORDS_RECORDS_PATH);
+      $disk_used_space = $disk_total_space - $disk_free_space;
+      $disk_percent_space = round($disk_used_space * 100 / $disk_total_space, 0) . "%";
+      if ($disk_percent_space <= 33)
+        $color = 'green';
+      elseif ($disk_percent_space > 33 && $disk_percent_space <= 66)
+        $color = 'yellow';
+      else
+        $color = 'red';
+      $disk = array('free' => $disk_free_space, 'used' => $disk_used_space, 'total' => $disk_total_space, 'percent' => $disk_percent_space, 'color' => $color);
+
+      return view("CallRecords::llamadas", array('disk' => $disk));
     }
 
     public function getEntitiesDataTable()
@@ -80,7 +92,13 @@ class RecordController extends Controller
         }
       }
 
-      $entities = Record::all();
+      $request = request()->capture();
+      if ($request->has('year'))
+        $year = $request['year'];
+      else
+        $year = Carbon::now()->year;
+
+      $entities = Record::whereRaw("YEAR(callDate) = $year")->get(); 
       foreach ($entities as $entity)
       {
         $url = url("callrecords/llamada/" . $entity->id);
